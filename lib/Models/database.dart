@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gpauth_004/Models/gpauth_algorithms.dart';
 import 'package:gpauth_004/Models/gpauth_user.dart';
 import 'package:gpauth_004/Models/image_set.dart';
 
@@ -25,9 +26,13 @@ Future<Map<String, dynamic>> getImageSetDataFromFirebase(
   if (!data.exists) {
     return {'status': -1, 'data': null};
   } else {
+    print(data.data() as Map<String, dynamic>);
+    ImageSet imageSetObject =
+        ImageSet.fromJson(data.data() as Map<String, dynamic>);
+    GPAuthAlgorithms.updateAllImageSet(imageSetObject);
     return {
       'status': 1,
-      'data': ImageSet.fromJson(data.data() as Map<String, dynamic>)
+      'data': imageSetObject,
     };
   }
 }

@@ -43,6 +43,7 @@ dependencies:
   dropdown_search: ^5.0.6
   twilio_flutter: ^0.0.9
   fluttertoast: ^8.2.1
+  encrypt: ^5.0.1
 
 dev_dependencies:
   flutter_test:

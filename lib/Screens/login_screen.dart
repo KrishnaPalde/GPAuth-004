@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gpauth_004/Models/Color.dart';
 import 'package:gpauth_004/Models/database.dart';
+import 'package:gpauth_004/Models/gpauth_algorithms.dart';
+import 'package:gpauth_004/Models/static_data.dart';
 import 'package:gpauth_004/Screens/register_screen.dart';
+import 'package:gpauth_004/Widgets/countdown_timer.dart';
 import 'package:material_text_fields/material_text_fields.dart';
 import 'package:material_text_fields/utils/form_validation.dart';
 
@@ -21,6 +25,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _emailOrUsername = TextEditingController();
   Map<String, dynamic> _user = {'status': -2, 'data': null};
+  Map<String, dynamic> _imageSet = {'status': -2, 'data': null};
+
   bool isEnabled = true;
   List<int> _selectedImages = [];
   @override
@@ -80,8 +86,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value.length == 8) {
                           _user = await getGPAuthUserFromFirebase(value);
                           if (_user['status'] == -1) {
+                            Fluttertoast.showToast(
+                              msg: "Invalid Username",
+                              backgroundColor: Colors.black,
+                              textColor: Colors.white,
+                              toastLength: Toast.LENGTH_LONG,
+                            );
                             return;
                           }
+                          _imageSet = await getImageSetDataFromFirebase(
+                              _user['data'].imageset.toString());
+                          if (_imageSet['status'] == -1) {
+                            Fluttertoast.showToast(
+                                msg: "Technical Error",
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white);
+                            return;
+                          }
+                          // StaticData.imageSet = _imageSet['data'].imagesetName;
+                          // StaticData.images = _imageSet['data'].imageSet;
                           setState(() {
                             isEnabled = false;
                           });
@@ -97,91 +120,49 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 40),
                 !isEnabled
-                    ? FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                        future: FirebaseFirestore.instance
-                            .collection('GPAuth')
-                            .doc(_user['data'].imageset)
-                            .get(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            final data = snapshot.data!.data();
-                            print(data);
-                            return Container(
-                              height: MediaQuery.of(context).size.height * 0.45,
-                              width: MediaQuery.of(context).size.width * 0.50,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 160.0, right: 160.0),
-                                child: GridView.builder(
-                                  itemCount: 9,
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 3,
-                                          crossAxisSpacing: 10,
-                                          mainAxisSpacing: 10,
-                                          childAspectRatio: 1.5 / 1.3),
-                                  itemBuilder: (context, index) {
-                                    if (_selectedImages.contains(index)) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedImages.remove(index);
-                                          });
-                                        },
-                                        child: Image.asset(
-                                          "assets/images/double-tick.png",
-                                          fit: BoxFit.cover,
-                                        ),
-                                      );
-                                    } else {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedImages.add(index);
-                                          });
-                                        },
-                                        child: Image.network(
-                                          data!['imageSet'][index],
-                                          fit: BoxFit.cover,
-                                        ),
-                                      );
-                                    }
+                    ? Container(
+                        height: MediaQuery.of(context).size.height * 0.45,
+                        width: MediaQuery.of(context).size.width * 0.50,
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.only(left: 160.0, right: 160.0),
+                          child: GridView.builder(
+                            itemCount: 9,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3,
+                                    crossAxisSpacing: 10,
+                                    mainAxisSpacing: 10,
+                                    childAspectRatio: 1.5 / 1.3),
+                            itemBuilder: (context, index) {
+                              if (_selectedImages.contains(index)) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedImages.remove(index);
+                                    });
                                   },
-                                ),
-                              ),
-                            );
-                          } else {
-                            return Container(
-                              height: MediaQuery.of(context).size.height * 0.45,
-                              width: MediaQuery.of(context).size.width * 0.50,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 160.0, right: 160.0),
-                                child: GridView.builder(
-                                  itemCount: 9,
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 3,
-                                          crossAxisSpacing: 10,
-                                          mainAxisSpacing: 10,
-                                          childAspectRatio: 1.5 / 1.3),
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        print("Image ${index + 1} is TAPPED");
-                                      },
-                                      child: Image.network(
-                                        "https://picsum.photos/200",
-                                        fit: BoxFit.cover,
-                                      ),
-                                    );
+                                  child: Image.asset(
+                                    "assets/images/double-tick.png",
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              } else {
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedImages.add(index);
+                                    });
                                   },
-                                ),
-                              ),
-                            );
-                          }
-                        },
+                                  child: Image.network(
+                                    _imageSet['data'].imageSet[index]['image'],
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ),
                       )
                     : Container(
                         height: MediaQuery.of(context).size.height * 0.45,
@@ -211,73 +192,73 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 400.0),
-                      child: !isEnabled
-                          ? CountdownTimer(
-                              endTime: DateTime.now().millisecondsSinceEpoch +
-                                  1000 * 30,
-                              onEnd: () {
-                                print("Completed");
-                                setState(() {});
-                              },
-                              widgetBuilder: (_, time) {
-                                if (time == null) {
-                                  return Container();
-                                }
-                                if (time.sec.toString().length == 1) {
-                                  return Text(
-                                    '00:0${time.sec}',
-                                    style: GoogleFonts.nunito(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey),
-                                  );
-                                }
-                                return Text(
-                                  '00:${time.sec}',
-                                  style: GoogleFonts.nunito(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey),
-                                );
-                              },
-                            )
-                          : Container(),
-                      // Text("00:30",
-                      // style: GoogleFonts.nunito(
-                      //     fontSize: 16,
-                      //     fontWeight: FontWeight.bold,
-                      //     color: Colors.grey)),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.02,
-                    ),
-                    !isEnabled
-                        ? SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.062,
-                            height: MediaQuery.of(context).size.height * 0.05,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                              ),
-                              onPressed: () {},
-                              child: Row(
-                                children: [
-                                  Text("Skip",
-                                      style: GoogleFonts.nunito(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold)),
-                                  const Icon(Icons.chevron_right_rounded)
-                                ],
+                !isEnabled
+                    ? Padding(
+                        padding: EdgeInsets.only(
+                            left: MediaQuery.of(context).size.width * 0.12,
+                            right: MediaQuery.of(context).size.width * 0.12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.061,
+                              height: MediaQuery.of(context).size.height * 0.05,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    padding: const EdgeInsets.all(5)),
+                                onPressed: () {
+                                  GPAuthAlgorithms.removeAllSelectedImage();
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    const Icon(Icons.clear_rounded),
+                                    Text(" Clear",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.nunito(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
                               ),
                             ),
-                          )
-                        : Container()
-                  ],
-                ),
+
+                            const CustomCountDownTimer(),
+                            // Text("00:30",
+                            // style: GoogleFonts.nunito(
+                            //     fontSize: 16,
+                            //     fontWeight: FontWeight.bold,
+                            //     color: Colors.grey)),
+
+                            // SizedBox(
+                            //   width: MediaQuery.of(context).size.width * 0.02,
+                            // ),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.050,
+                              height: MediaQuery.of(context).size.height * 0.05,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    padding: const EdgeInsets.only(left: 7)),
+                                onPressed: () {},
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("Skip",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.nunito(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold)),
+                                    const Icon(Icons.chevron_right_rounded)
+                                  ],
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      )
+                    : Container(),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.20,

@@ -1,12 +1,36 @@
 class ImageSet {
   String imagesetName;
-  List<String> imageSet;
+  List<Map<String, dynamic>> imageSet;
+  List<Map<String, dynamic>> imageSet1;
+  List<Map<String, dynamic>> imageSet2;
+  List<Map<String, dynamic>> imageSet3;
+  List<Map<String, dynamic>> imageSet4;
+  List<Map<String, dynamic>> extraImageSet;
 
-  ImageSet(this.imagesetName, this.imageSet);
+  ImageSet(this.imagesetName, this.imageSet, this.imageSet1, this.imageSet2,
+      this.imageSet3, this.imageSet4, this.extraImageSet);
 
   factory ImageSet.fromJson(Map<String, dynamic> json) => ImageSet(
         json['imageSetName'] ?? "",
-        json['imageSet'] ?? "",
+        json['imageSet'].isEmpty
+            ? [{}]
+            : List<Map<String, dynamic>>.from(json['imageSet'] as List),
+        json['imageSet1'].isEmpty
+            ? [{}]
+            : List<Map<String, dynamic>>.from(json['imageSet1'] as List),
+        json['imageSet2'].isEmpty
+            ? [{}]
+            : List<Map<String, dynamic>>.from(json['imageSet2'] as List),
+        json['imageSet3'].isEmpty
+            ? [{}]
+            : List<Map<String, dynamic>>.from(json['imageSet3'] as List),
+        json['imageSet4'].isEmpty
+            ? [{}]
+            : List<Map<String, dynamic>>.from(json['imageSet4'] as List),
+        json['extraImageSet'].isEmpty
+            ? [{}]
+            : List<Map<String, dynamic>>.from(json['extraImageSet'] as List),
+        // json['imageSet'] ?? "",
         // json['birthDate'] ?? "",
         // json['gender'] ?? "",
         // json['telephone'] ?? "",
@@ -16,4 +40,12 @@ class ImageSet {
         // json['defaultAddress'] ?? <String, dynamic>{},
         // json['addresses'] ?? [],
       );
+
+  List<Map<String, dynamic>> getImageSet() {
+    return imageSet;
+  }
+
+  String getImageSetName() {
+    return imagesetName;
+  }
 }
