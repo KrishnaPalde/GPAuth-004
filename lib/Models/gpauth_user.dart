@@ -2,11 +2,13 @@ class GPAuthUser {
   String username;
   String email;
   String imageset;
+  String encryptedPString;
 
   GPAuthUser(
     this.username,
     this.email,
     this.imageset,
+    this.encryptedPString,
     //   [
     //   this.birthDate = '',
     //   this.gender = '',
@@ -20,17 +22,18 @@ class GPAuthUser {
   );
 
   factory GPAuthUser.fromJson(Map<String, dynamic> json) => GPAuthUser(
-        json['username'] ?? "",
-        json['email'] ?? "",
-        json['imageSet'] ?? "",
-        // json['birthDate'] ?? "",
-        // json['gender'] ?? "",
-        // json['telephone'] ?? "",
-        // json['profileImage'] ?? "",
-        // json['cart'] ?? <String, dynamic>{},
-        // json['wishlist'] ?? [],
-        // json['defaultAddress'] ?? <String, dynamic>{},
-        // json['addresses'] ?? [],
+      json['username'] ?? "",
+      json['email'] ?? "",
+      json['imageSet'] ?? "",
+      json['encryptedPString'] ?? ""
+      // json['birthDate'] ?? "",
+      // json['gender'] ?? "",
+      // json['telephone'] ?? "",
+      // json['profileImage'] ?? "",
+      // json['cart'] ?? <String, dynamic>{},
+      // json['wishlist'] ?? [],
+      // json['defaultAddress'] ?? <String, dynamic>{},
+      // json['addresses'] ?? [],
       );
 
   Map<String, dynamic> toJson() => _GPAuthUserToJson(this);
@@ -40,6 +43,7 @@ class GPAuthUser {
         'username': instance.username,
         'email': instance.email,
         'imageSet': instance.imageset,
+        'encryptedPString': instance.encryptedPString,
         // 'birthDate': instance.birthDate,
         // 'gender': instance.gender,
         // 'telephone': instance.telephone,
