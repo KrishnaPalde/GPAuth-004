@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gpauth_004/Models/Color.dart';
 import 'package:gpauth_004/Models/database.dart';
 import 'package:gpauth_004/Models/gpauth_algorithms.dart';
+import 'package:gpauth_004/Models/gpauth_encryption.dart';
 import 'package:gpauth_004/Models/static_data.dart';
 import 'package:gpauth_004/Screens/register_screen.dart';
 import 'package:gpauth_004/Widgets/countdown_timer.dart';
@@ -29,6 +30,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool isEnabled = true;
   List<int> _selectedImages = [];
+  void maliciousActivityDetected() {
+    setState(() {
+      GPAuthAlgorithms.removeAllSelectedImage();
+      GPAuthAlgorithms.currentImageSet.clear();
+      GPAuthAlgorithms.getRandomImageSetExceptCurrentSet();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,6 +105,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           }
                           _imageSet = await getImageSetDataFromFirebase(
                               _user['data'].imageset.toString());
+                          // GPAuthAlgorithms.populatePasswordImageSet(
+                          //     GPAuthEncryption.decryptGPAuthPassword(
+                          //             _user['data'].encryptedPString)
+                          //         .split(";"));
+
                           if (_imageSet['status'] == -1) {
                             Fluttertoast.showToast(
                                 msg: "Technical Error",
@@ -105,6 +119,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           }
                           // StaticData.imageSet = _imageSet['data'].imagesetName;
                           // StaticData.images = _imageSet['data'].imageSet;
+                          GPAuthAlgorithms.populatePasswordImageSet(
+                              ['polar-bear', 'fox', 'zebra-left']);
+                          GPAuthAlgorithms.getFirstImageSet();
                           setState(() {
                             isEnabled = false;
                           });
@@ -135,15 +152,36 @@ class _LoginScreenState extends State<LoginScreen> {
                                     mainAxisSpacing: 10,
                                     childAspectRatio: 1.5 / 1.3),
                             itemBuilder: (context, index) {
-                              if (_selectedImages.contains(index)) {
+                              // print(GPAuthAlgorithms.passwordImageSet);
+                              if (GPAuthAlgorithms.selectedImages.contains(
+                                  GPAuthAlgorithms.currentImageSet.singleWhere(
+                                      (element) =>
+                                          element['index'] ==
+                                          GPAuthAlgorithms
+                                                  .currentImageSet[index]
+                                              ['index']))) {
+                                final data = GPAuthAlgorithms
+                                    .getSingleRandomImageExceptCurrentSet();
                                 return GestureDetector(
                                   onTap: () {
                                     setState(() {
-                                      _selectedImages.remove(index);
+                                      if (GPAuthAlgorithms
+                                              .selectedImages.length <
+                                          3) {
+                                        GPAuthAlgorithms
+                                            .selectImageFromCurrentSet(
+                                                GPAuthAlgorithms
+                                                        .currentImageSet[index]
+                                                    ['index']);
+                                      } else {
+                                        Fluttertoast.showToast(
+                                            msg:
+                                                "Select Only 3 Images.\nClick on Clear Button");
+                                      }
                                     });
                                   },
-                                  child: Image.asset(
-                                    "assets/images/double-tick.png",
+                                  child: Image.network(
+                                    data['image'],
                                     fit: BoxFit.cover,
                                   ),
                                 );
@@ -151,11 +189,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return GestureDetector(
                                   onTap: () {
                                     setState(() {
-                                      _selectedImages.add(index);
+                                      if (GPAuthAlgorithms
+                                              .selectedImages.length <
+                                          3) {
+                                        GPAuthAlgorithms
+                                            .selectImageFromCurrentSet(
+                                                GPAuthAlgorithms
+                                                        .currentImageSet[index]
+                                                    ['index']);
+                                      } else {
+                                        Fluttertoast.showToast(
+                                            msg:
+                                                "Select Only 3 Images.\nClick on Clear Button");
+                                      }
                                     });
                                   },
                                   child: Image.network(
-                                    _imageSet['data'].imageSet[index]['image'],
+                                    GPAuthAlgorithms.currentImageSet[index]
+                                        ['image'],
                                     fit: BoxFit.cover,
                                   ),
                                 );

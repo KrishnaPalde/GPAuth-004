@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gpauth_004/Models/gpauth_algorithms.dart';
+import 'package:gpauth_004/Models/gpauth_encryption.dart';
 import 'package:gpauth_004/Models/gpauth_user.dart';
 import 'package:gpauth_004/Models/image_set.dart';
 
@@ -9,10 +10,9 @@ Future<Map<String, dynamic>> getGPAuthUserFromFirebase(String username) async {
   if (!data.exists) {
     return {'status': -1, 'data': null};
   } else {
-    return {
-      'status': 1,
-      'data': GPAuthUser.fromJson(data.data() as Map<String, dynamic>)
-    };
+    GPAuthUser _user = GPAuthUser.fromJson(data.data() as Map<String, dynamic>);
+
+    return {'status': 1, 'data': _user};
   }
 }
 
@@ -26,7 +26,7 @@ Future<Map<String, dynamic>> getImageSetDataFromFirebase(
   if (!data.exists) {
     return {'status': -1, 'data': null};
   } else {
-    print(data.data() as Map<String, dynamic>);
+    // print(data.data() as Map<String, dynamic>);
     ImageSet imageSetObject =
         ImageSet.fromJson(data.data() as Map<String, dynamic>);
     GPAuthAlgorithms.updateAllImageSet(imageSetObject);

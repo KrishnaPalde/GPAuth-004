@@ -2,13 +2,16 @@
 
 import 'dart:math';
 
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gpauth_004/Models/database.dart';
 import 'package:gpauth_004/Models/gpauth_encryption.dart';
 import 'package:gpauth_004/Models/gpauth_user.dart';
 import 'package:gpauth_004/Models/image_set.dart';
+import 'package:gpauth_004/Screens/login_screen.dart';
 
 class GPAuthAlgorithms {
   static bool isMaliciousActivityDetected = false;
+  static int passwordAttempts = 0;
   static List<Map<String, dynamic>> selectedImages = [];
   static List<Map<String, dynamic>> allImageSet = [];
   static List<Map<String, dynamic>> currentImageSet = [];
@@ -20,32 +23,101 @@ class GPAuthAlgorithms {
     allImageSet.addAll(obj.imageSet2);
     allImageSet.addAll(obj.imageSet3);
     allImageSet.addAll(obj.imageSet4);
-    allImageSet.addAll(obj.extraImageSet); // Extra ImageSet
+    allImageSet.addAll(obj.imageSet5); // Extra ImageSet
   }
 
   // Adds Particular Image to Selected Image Set from Current Image Set
   static void selectImageFromCurrentSet(int index) {
-    selectedImages.add(currentImageSet[index]);
+    // if (selectedImages.length > 1) {
+    //   detectMaliciousActivity();
+    // }
+    if (selectedImages.length < 3) {
+      selectedImages.add(
+          currentImageSet.singleWhere((element) => element['index'] == index));
+    } else {
+      Fluttertoast.showToast(msg: "Please Select on 3 Password Images");
+    }
+  }
+
+  // Function to Detect Malicious Activity on Currently Loaded Image Set
+  // Not Perfect
+  static void detectMaliciousActivity() {
+    int flag = 0;
+    if (passwordAttempts >= 2) {
+      if (selectedImages.length == 2 || selectedImages.length == 3) {
+        for (int i = 0; i < selectedImages.length; i++) {
+          if (selectedImages.first != passwordImageSet.first) {
+            flag = 1;
+            break;
+          } else {
+            flag = 0;
+          }
+          if (selectedImages[1] != passwordImageSet[1]) {
+            flag = 1;
+            break;
+          } else {
+            flag = 0;
+          }
+          if (selectedImages.length == 3) {
+            if (selectedImages[2] != passwordImageSet[2]) {
+              flag = 1;
+              break;
+            } else {
+              flag = 0;
+            }
+          }
+        }
+        // selectedImages.forEach((element1) {
+        //   // if (!passwordImageSet.contains(passwordImageSet.singleWhere(
+        //   //     (element) => element['label'] == element1['label']))) {
+        //   if (!passwordImageSet.contains(element1)) {
+        //     if (flag == 0) {
+        //       flag = 1;
+        //     }
+        //   } else {
+        //     flag = 0;
+        //   }
+        // });
+      }
+    }
+    if (flag == 1) {
+      isMaliciousActivityDetected = true;
+      // malici
+    }
   }
 
   // Clear Selected Image Set
   static void removeAllSelectedImage() {
     selectedImages.clear();
+    print("CLEARED");
   }
 
   // Function to populate Password Image Set
   // labels List must contain lowercase labels
   static void populatePasswordImageSet(List<String> labels) {
+    // for (var element in allImageSet) {
+    //   if(labels.contains(element['label'].toString().toLowerCase())){
+    //     passwordImageSet.add(element);
+    //   }
+    // }
+    // allImageSet.forEach((element) {
+    //   if (labels.contains(element['label'].toString().toLowerCase())) {
+    //     passwordImageSet.add(element);
+    //   }
+    // });
     allImageSet.forEach((element) {
-      if (labels.contains(element['label'].toString().toLowerCase())) {
-        passwordImageSet.add(element);
-        allImageSet.remove(element);
-      }
+      print(element['label']);
     });
-  }
+    passwordImageSet.addAll(allImageSet.where((element) =>
+        labels.contains(element['label'].toString().toLowerCase())));
+    // passwordImageSet.add(allImageSet
+    //     .singleWhere((element) => element['label'] == 'elephant-right'));
 
-  // Function to Detect Malicious Activity on Currently Loaded Image Set
-  static void detectMaliciousActivity() {}
+    print(labels);
+    print(passwordImageSet);
+    allImageSet.removeWhere((element) =>
+        labels.contains(element['label'].toString().toLowerCase()));
+  }
 
   // Function to define which set contains Password Image
   static Map<String, dynamic> setPasswordImagesIndex() {
@@ -106,28 +178,23 @@ class GPAuthAlgorithms {
         };
       }
     } else {
-      currentImageSet.addAll(passwordImageSet);
+      // currentImageSet.addAll(passwordImageSet);
       return {};
     }
   }
 
-  static List<Map<String, dynamic>> getFirstImageSet() {
-    setPasswordImagesIndex();
-    allImageSet.removeWhere((element) => passwordImageSet.contains(element));
+  static void getFirstImageSet() {
+    currentImageSet.addAll(passwordImageSet);
     allImageSet.shuffle();
     currentImageSet
         .addAll(allImageSet.sublist(0, (9 - currentImageSet.length)));
     currentImageSet.shuffle();
-    return currentImageSet;
   }
 
   // Function to return Set of 9 Images excluding current images
-  // Pending
-  static List<Map<String, dynamic>> getRandomImageSetExceptCurrentSet({
-    bool isPasswordImage = false,
-  }) {
-    if (isPasswordImage) {
-      var passwordImage = setPasswordImagesIndex();
+  static List<Map<String, dynamic>> getRandomImageSetExceptCurrentSet() {
+    var passwordData = setPasswordImagesIndex();
+    if (passwordData['isPasswordImage']) {
       List<Map<String, dynamic>> tempList = [];
       int count = 0;
       allImageSet.forEach((element) {
@@ -144,7 +211,7 @@ class GPAuthAlgorithms {
       });
       currentImageSet.clear();
       if (tempList.length == 8) {
-        currentImageSet.add(passwordImage);
+        currentImageSet.add(passwordData['passwordImageElement']);
         currentImageSet.addAll(tempList);
         currentImageSet.shuffle();
       }
@@ -158,12 +225,12 @@ class GPAuthAlgorithms {
   }
 
   // Function to return Single image excluding images from current set
-  static String? getSingleRandomImageExceptCurrentSet() {
+  static Map<String, dynamic> getSingleRandomImageExceptCurrentSet() {
     List<int> availableIndex = [];
     List<int> currentImageIndex = [];
 
     currentImageSet.forEach((element) {
-      currentImageSet.add(element['index']);
+      currentImageIndex.add(element['index']);
     });
 
     allImageSet.forEach((element) {
@@ -172,15 +239,16 @@ class GPAuthAlgorithms {
       }
     });
     availableIndex.shuffle();
-    return allImageSet.elementAt(availableIndex.first)['image'];
+    return allImageSet.elementAt(availableIndex.first);
   }
 
   // Funtion to Authenticate User Based on Selected Images and Already Set Images
   static Future<Map<String, dynamic>> authenticateGPAuthUser(
       String username) async {
-    if (selectedImages.length == 3) {
+    if (selectedImages.length == 3 && passwordAttempts < 3) {
       final data = await getGPAuthUserFromFirebase(username);
       if (data['status'] == -1) {
+        Fluttertoast.showToast(msg: "Technical Error");
         return {
           "status": -1,
           "errorMessage":
@@ -197,11 +265,14 @@ class GPAuthAlgorithms {
           final oPString =
               GPAuthEncryption.decryptGPAuthPassword(_user.encryptedPString);
           if (pString.compareTo(oPString) == 0) {
+            Fluttertoast.showToast(msg: "Authentication Successful");
             return {
               "status": 1,
               "user": _user,
             };
           } else {
+            passwordAttempts += 1;
+            Fluttertoast.showToast(msg: "Invalid Password");
             return {
               "status": -1,
               "errorMessage":
@@ -209,6 +280,7 @@ class GPAuthAlgorithms {
             };
           }
         } else {
+          Fluttertoast.showToast(msg: "Technical Error");
           return {
             "status": -1,
             "errorMessage":
@@ -216,7 +288,14 @@ class GPAuthAlgorithms {
           };
         }
       }
+    } else if (passwordAttempts == 3) {
+      Fluttertoast.showToast(msg: "Your Password Attempt Limit is Exhausted");
+      return {
+        "status": -1,
+        "errorMessage": "Unable to Authenticate User.",
+      };
     } else {
+      Fluttertoast.showToast(msg: "Select 3 Password Images only");
       return {
         "status": -1,
         "errorMessage":

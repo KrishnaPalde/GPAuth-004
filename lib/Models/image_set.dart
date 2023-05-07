@@ -5,10 +5,10 @@ class ImageSet {
   List<Map<String, dynamic>> imageSet2;
   List<Map<String, dynamic>> imageSet3;
   List<Map<String, dynamic>> imageSet4;
-  List<Map<String, dynamic>> extraImageSet;
+  List<Map<String, dynamic>> imageSet5;
 
   ImageSet(this.imagesetName, this.imageSet, this.imageSet1, this.imageSet2,
-      this.imageSet3, this.imageSet4, this.extraImageSet);
+      this.imageSet3, this.imageSet4, this.imageSet5);
 
   factory ImageSet.fromJson(Map<String, dynamic> json) => ImageSet(
         json['imageSetName'] ?? "",
@@ -27,9 +27,9 @@ class ImageSet {
         json['imageSet4'].isEmpty
             ? [{}]
             : List<Map<String, dynamic>>.from(json['imageSet4'] as List),
-        json['extraImageSet'].isEmpty
+        json['imageSet5'].isEmpty
             ? [{}]
-            : List<Map<String, dynamic>>.from(json['extraImageSet'] as List),
+            : List<Map<String, dynamic>>.from(json['imageSet5'] as List),
         // json['imageSet'] ?? "",
         // json['birthDate'] ?? "",
         // json['gender'] ?? "",
