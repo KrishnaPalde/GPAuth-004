@@ -31,11 +31,12 @@ class GPAuthAlgorithms {
     // if (selectedImages.length > 1) {
     //   detectMaliciousActivity();
     // }
+    print(index);
     if (selectedImages.length < 3) {
-      selectedImages.add(
-          currentImageSet.singleWhere((element) => element['index'] == index));
+      selectedImages.add(currentImageSet[index]);
+      getSingleRandomImageExceptCurrentSet(index);
     } else {
-      Fluttertoast.showToast(msg: "Please Select on 3 Password Images");
+      Fluttertoast.showToast(msg: "Please Select only 3 Password Images");
     }
   }
 
@@ -115,8 +116,8 @@ class GPAuthAlgorithms {
 
     print(labels);
     print(passwordImageSet);
-    allImageSet.removeWhere((element) =>
-        labels.contains(element['label'].toString().toLowerCase()));
+    // allImageSet.removeWhere((element) =>
+    //     labels.contains(element['label'].toString().toLowerCase()));
   }
 
   // Function to define which set contains Password Image
@@ -225,7 +226,7 @@ class GPAuthAlgorithms {
   }
 
   // Function to return Single image excluding images from current set
-  static Map<String, dynamic> getSingleRandomImageExceptCurrentSet() {
+  static void getSingleRandomImageExceptCurrentSet(int index) {
     List<int> availableIndex = [];
     List<int> currentImageIndex = [];
 
@@ -239,7 +240,12 @@ class GPAuthAlgorithms {
       }
     });
     availableIndex.shuffle();
-    return allImageSet.elementAt(availableIndex.first);
+    while (passwordImageSet
+        .contains(allImageSet.elementAt(availableIndex.first))) {
+      availableIndex.shuffle();
+    }
+
+    currentImageSet[index] = allImageSet.elementAt(availableIndex.first);
   }
 
   // Funtion to Authenticate User Based on Selected Images and Already Set Images
