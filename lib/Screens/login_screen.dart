@@ -153,64 +153,60 @@ class _LoginScreenState extends State<LoginScreen> {
                                     childAspectRatio: 1.5 / 1.3),
                             itemBuilder: (context, index) {
                               // print(GPAuthAlgorithms.passwordImageSet);
-                              if (GPAuthAlgorithms.selectedImages.contains(
-                                  GPAuthAlgorithms.currentImageSet.singleWhere(
-                                      (element) =>
-                                          element['index'] ==
-                                          GPAuthAlgorithms
-                                                  .currentImageSet[index]
-                                              ['index']))) {
-                                final data = GPAuthAlgorithms
-                                    .getSingleRandomImageExceptCurrentSet();
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      if (GPAuthAlgorithms
-                                              .selectedImages.length <
-                                          3) {
-                                        GPAuthAlgorithms
-                                            .selectImageFromCurrentSet(
-                                                GPAuthAlgorithms
-                                                        .currentImageSet[index]
-                                                    ['index']);
-                                      } else {
-                                        Fluttertoast.showToast(
-                                            msg:
-                                                "Select Only 3 Images.\nClick on Clear Button");
-                                      }
-                                    });
-                                  },
-                                  child: Image.network(
-                                    data['image'],
-                                    fit: BoxFit.cover,
-                                  ),
-                                );
-                              } else {
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      if (GPAuthAlgorithms
-                                              .selectedImages.length <
-                                          3) {
-                                        GPAuthAlgorithms
-                                            .selectImageFromCurrentSet(
-                                                GPAuthAlgorithms
-                                                        .currentImageSet[index]
-                                                    ['index']);
-                                      } else {
-                                        Fluttertoast.showToast(
-                                            msg:
-                                                "Select Only 3 Images.\nClick on Clear Button");
-                                      }
-                                    });
-                                  },
-                                  child: Image.network(
-                                    GPAuthAlgorithms.currentImageSet[index]
-                                        ['image'],
-                                    fit: BoxFit.cover,
-                                  ),
-                                );
-                              }
+                              // if (GPAuthAlgorithms.selectedImages.contains(
+                              //     GPAuthAlgorithms.currentImageSet.singleWhere(
+                              //         (element) =>
+                              //             element['index'] ==
+                              //             GPAuthAlgorithms
+                              //                     .currentImageSet[index]
+                              //                 ['index']))) {
+                              //   GPAuthAlgorithms
+                              //       .getSingleRandomImageExceptCurrentSet(
+                              //           index);
+                              //   return GestureDetector(
+                              //     onTap: () {
+                              //       setState(() {
+                              //         if (GPAuthAlgorithms
+                              //                 .selectedImages.length <
+                              //             3) {
+                              //           GPAuthAlgorithms
+                              //               .selectImageFromCurrentSet(
+                              //                   index);
+                              //         } else {
+                              //           Fluttertoast.showToast(
+                              //               msg:
+                              //                   "Select Only 3 Images.\nClick on Clear Button");
+                              //         }
+                              //       });
+                              //     },
+                              //     child: Image.network(
+                              //       GPAuthAlgorithms.currentImageSet[index]
+                              //           ['image'],
+                              //       fit: BoxFit.cover,
+                              //     ),
+                              //   );
+                              // } else {
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    if (GPAuthAlgorithms.selectedImages.length <
+                                        3) {
+                                      GPAuthAlgorithms
+                                          .selectImageFromCurrentSet(index);
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg:
+                                              "Select Only 3 Images.\nClick on Clear Button");
+                                    }
+                                  });
+                                },
+                                child: Image.network(
+                                  GPAuthAlgorithms.currentImageSet[index]
+                                      ['image'],
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                              // }
                             },
                           ),
                         ),
@@ -319,7 +315,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25))),
-                    onPressed: () {},
+                    onPressed: () {
+                      for (var element in GPAuthAlgorithms.selectedImages) {
+                        Fluttertoast.showToast(
+                            msg: "${element['label']}",
+                            toastLength: Toast.LENGTH_LONG);
+                      }
+                    },
                     child: Text("Login",
                         style: GoogleFonts.nunito(
                             fontSize: 20, fontWeight: FontWeight.bold)),
