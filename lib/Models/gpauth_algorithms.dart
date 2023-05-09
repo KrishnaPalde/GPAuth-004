@@ -180,20 +180,51 @@ class GPAuthAlgorithms {
       }
     } else {
       // currentImageSet.addAll(passwordImageSet);
-      return {};
+      return {
+        "isPasswordImage": false,
+        "passwordImageElement": {},
+      };
     }
   }
 
   static void getFirstImageSet() {
-    currentImageSet.addAll(passwordImageSet);
+    List<Map<String, dynamic>> _temp = [];
+    _temp.addAll(passwordImageSet);
     allImageSet.shuffle();
-    currentImageSet
-        .addAll(allImageSet.sublist(0, (9 - currentImageSet.length)));
+    // currentImageSet.addAll(passwordImageSet);
+    // allImageSet.shuffle();
+    // currentImageSet
+    //     .addAll(allImageSet.sublist(0, (9 - currentImageSet.length)));
+    _temp.addAll(allImageSet.sublist(0, (9 - currentImageSet.length)));
+    List _tempElement = [];
+    int flag = 0;
+    _temp.forEach((element) {
+      if (_tempElement.contains(element)) {
+        flag = 1;
+      } else {
+        _tempElement.add(element);
+      }
+    });
+    while (flag != 0) {
+      _tempElement.clear();
+      allImageSet.shuffle();
+      _temp.clear();
+      _temp.addAll(allImageSet.sublist(0, (9 - currentImageSet.length)));
+      _temp.forEach((element) {
+        if (_tempElement.contains(element)) {
+          flag = 1;
+        } else {
+          _tempElement.add(element);
+        }
+      });
+    }
+    currentImageSet = _temp;
     currentImageSet.shuffle();
   }
 
   // Function to return Set of 9 Images excluding current images
-  static List<Map<String, dynamic>> getRandomImageSetExceptCurrentSet() {
+  static void getRandomImageSetExceptCurrentSet() {
+    print(currentImageSet);
     var passwordData = setPasswordImagesIndex();
     if (passwordData['isPasswordImage']) {
       List<Map<String, dynamic>> tempList = [];
@@ -216,12 +247,11 @@ class GPAuthAlgorithms {
         currentImageSet.addAll(tempList);
         currentImageSet.shuffle();
       }
-      return currentImageSet;
     } else {
       allImageSet.shuffle();
       currentImageSet = allImageSet.sublist(0, 9);
       currentImageSet.shuffle();
-      return currentImageSet;
+      print(currentImageSet);
     }
   }
 
@@ -241,10 +271,10 @@ class GPAuthAlgorithms {
     });
     availableIndex.shuffle();
     while (passwordImageSet
-        .contains(allImageSet.elementAt(availableIndex.first))) {
+            .contains(allImageSet.elementAt(availableIndex.first)) &&
+        currentImageSet.contains(allImageSet.elementAt(availableIndex.first))) {
       availableIndex.shuffle();
     }
-
     currentImageSet[index] = allImageSet.elementAt(availableIndex.first);
   }
 

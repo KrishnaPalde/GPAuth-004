@@ -38,6 +38,10 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  void rebuildCallBack() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -271,7 +275,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
 
-                            const CustomCountDownTimer(),
+                            CustomCountDownTimer(
+                              onTimerEndsCall: rebuildCallBack,
+                            ),
                             // Text("00:30",
                             // style: GoogleFonts.nunito(
                             //     fontSize: 16,
@@ -288,7 +294,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.black,
                                     padding: const EdgeInsets.only(left: 7)),
-                                onPressed: () {},
+                                onPressed: () {
+                                  setState(() {
+                                    GPAuthAlgorithms
+                                        .getRandomImageSetExceptCurrentSet();
+                                  });
+                                },
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
